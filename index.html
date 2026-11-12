@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FieldOps · Design case study</title>
+<meta name="description" content="Design case study: a dispatcher dashboard and in-cab driver app for yard and fleet operations, with a shared design system.">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="components.css">
+<style>
+  .wrap { max-width: 920px; margin: 0 auto; padding: var(--fo-7) max(16px, env(safe-area-inset-left, 0px)) var(--fo-7); display: grid; gap: var(--fo-7); }
+  header { display: grid; gap: var(--fo-4); }
+  .lede { font-size: var(--fo-size-lg); line-height: 1.5; max-width: 62ch; margin: 0; }
+  .meta { display: flex; flex-wrap: wrap; gap: var(--fo-2) var(--fo-5); font: 400 var(--fo-size-sm) var(--fo-mono); color: var(--fo-ink-2); }
+  .cta { display: flex; flex-wrap: wrap; gap: var(--fo-3); }
+  .cta a { text-decoration: none; }
+  section { display: grid; gap: var(--fo-4); }
+  p { margin: 0; max-width: 68ch; }
+  .two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--fo-4); }
+  .three { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--fo-4); }
+  .persona h3 { margin-bottom: var(--fo-2); }
+  .persona ul, .list { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+  .flow { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--fo-2); counter-reset: s; }
+  .flow div { background: var(--fo-surface); border: 1px solid var(--fo-line); border-radius: var(--fo-radius); padding: var(--fo-3); font-size: var(--fo-size-sm); }
+  .flow b { display: block; font-family: var(--fo-display); margin-bottom: 4px; }
+  .decision { border-left: 4px solid var(--fo-accent); padding: var(--fo-3) var(--fo-4); background: var(--fo-surface); display: grid; gap: 6px; }
+  .decision b { font-family: var(--fo-display); }
+  .swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: var(--fo-2); }
+  .sw { border: 1px solid var(--fo-line); border-radius: var(--fo-radius); overflow: hidden; font-size: var(--fo-size-xs); background: var(--fo-surface); }
+  .sw i { display: block; height: 44px; }
+  .sw span { display: block; padding: 6px 8px; font-family: var(--fo-mono); }
+  .row { display: flex; flex-wrap: wrap; gap: var(--fo-3); align-items: center; }
+  .shots { display: grid; grid-template-columns: 1.6fr 1fr; gap: var(--fo-4); }
+  .shot { display: grid; gap: var(--fo-2); text-decoration: none; color: var(--fo-ink); }
+  .shot .frame { border: 1px solid var(--fo-line); border-radius: var(--fo-radius-lg); background: var(--fo-surface); padding: var(--fo-4); display: grid; gap: var(--fo-2); }
+  .after { background: var(--fo-surface); border: 1px solid var(--fo-line); border-radius: var(--fo-radius-lg); padding: var(--fo-4); }
+  footer { border-top: 1px solid var(--fo-line); padding-top: var(--fo-4); font-size: var(--fo-size-sm); color: var(--fo-ink-2); display: grid; gap: 6px; }
+  @media (max-width: 760px) { .two, .three, .shots, .flow { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <span class="fo-label">Design case study · Portfolio project, 2026</span>
+  <h1 class="fo-h1">FieldOps: one alert, two people, two screens.</h1>
+  <p class="lede">A dispatcher dashboard and an in-cab driver app for yard and fleet operations, built on one shared design system. I framed the problem, designed both surfaces, and built them as working front-end code on top of my own telemetry pipeline.</p>
+  <div class="meta"><span>Role: product design, front-end</span><span>Web + mobile</span><span>HTML · CSS tokens · JavaScript</span></div>
+  <div class="cta">
+    <a class="fo-btn fo-btn--primary" href="dispatch.html">Open the dispatch board</a>
+    <a class="fo-btn" href="driver.html">Open the driver app</a>
+    <a class="fo-btn" href="https://github.com/fleurybryanhavyarimana0-X/fieldops-design">Source</a>
+  </div>
+</header>
+
+<section aria-labelledby="problem">
+  <h2 class="fo-h2" id="problem">The problem</h2>
+  <p>Telemetry systems are good at producing alerts and bad at getting them handled. On the industrial sites I worked with, supervisors received long lists of events with no order, and drivers only heard about a problem from a radio call after the fact. The same event, an engine idling for ten minutes, meant very different things to the two people involved.</p>
+  <div class="two">
+    <div class="fo-card persona"><h3 class="fo-h3">Dispatcher</h3><ul><li>Watches 20 to 60 assets across a shift</li><li>Needs to know what to act on first, not everything that happened</li><li>Works at a desk with two screens, often on the phone</li></ul></div>
+    <div class="fo-card persona"><h3 class="fo-h3">Driver / operator</h3><ul><li>In a moving, vibrating cab, often wearing gloves</li><li>Glances at the screen for one or two seconds</li><li>Wants context for an alert and a way to explain it ("I'm waiting to load")</li></ul></div>
+  </div>
+</section>
+
+<section aria-labelledby="framing">
+  <h2 class="fo-h2" id="framing">How I framed it</h2>
+  <p>I treated each alert as a small workflow with an owner rather than a notification. The question for the dispatcher became "what needs a decision now?" and for the driver "what is the one thing to do?".</p>
+  <div class="flow" aria-label="Alert flow">
+    <div><b>Detect</b>The pipeline validates and de-duplicates events, then raises speeding, idle and overheat alerts.</div>
+    <div><b>Tell the driver</b>A plain-language nudge in the cab, with one large response button.</div>
+    <div><b>Queue for dispatch</b>Critical first, then newest; each row names the asset, what happened and when.</div>
+    <div><b>Close the loop</b>Acknowledge, or see the driver's reason, so the same alert is not chased twice.</div>
+  </div>
+</section>
+
+<section aria-labelledby="decisions">
+  <h2 class="fo-h2" id="decisions">Key decisions</h2>
+  <div class="decision"><b>Status is never colour alone.</b><span>Each status pill pairs a word with a shape: a circle for on track, a diamond for warning, a triangle for critical. It stays readable for colour-blind users and on washed-out cab screens in sunlight.</span></div>
+  <div class="decision"><b>Two target sizes, one system.</b><span>Desk controls are 36 px tall; cab controls are 56 px with larger type, because gloves and vibration make small targets fail. Both come from the same tokens.</span></div>
+  <div class="decision"><b>The driver can answer the alert.</b><span>"I'm waiting to load" pauses the idle alert and tells dispatch why. It turns a blame signal into information and cuts the radio calls that follow every idle alert.</span></div>
+  <div class="decision"><b>Summary before detail.</b><span>The dispatch board opens on four numbers and an ordered queue. The fleet table and asset detail are there when needed, not before.</span></div>
+</section>
+
+<section aria-labelledby="screens">
+  <h2 class="fo-h2" id="screens">The screens</h2>
+  <div class="shots">
+    <a class="shot" href="dispatch.html"><div class="frame">
+      <span class="fo-label">Dispatch board · web</span>
+      <div class="fo-alert fo-alert--crit"><span class="fo-alert__stripe"></span><div><div class="fo-alert__title">Speeding · truck-101</div><div class="fo-alert__meta">118 kph in a 100 zone · 07:34</div></div><span class="fo-btn">Acknowledge</span></div>
+      <div class="fo-alert fo-alert--warn"><span class="fo-alert__stripe"></span><div><div class="fo-alert__title">Idling · loader-07</div><div class="fo-alert__meta">Not moving for 10 min · 07:20</div></div><span class="fo-btn">Acknowledge</span></div>
+    </div><span>Ordered action queue, fleet table and asset detail. Keyboard accessible.</span></a>
+    <a class="shot" href="driver.html"><div class="frame">
+      <span class="fo-label">Driver app · mobile</span>
+      <p style="font-size:var(--fo-size-lg)">You have been idling for 10 minutes. Switch off if you are waiting.</p>
+      <span class="fo-btn fo-btn--cab">I'm waiting to load</span>
+    </div><span>One message, one large action, pre-trip checklist.</span></a>
+  </div>
+</section>
+
+<section aria-labelledby="system">
+  <h2 class="fo-h2" id="system">Design system</h2>
+  <p>Both surfaces use one token file (colour, type, space, target sizes) and one component sheet. Dark mode is defined at the token level, so every component works in both themes.</p>
+  <div class="swatches">
+    <div class="sw"><i style="background:var(--fo-accent)"></i><span>accent</span></div>
+    <div class="sw"><i style="background:var(--fo-ok)"></i><span>ok</span></div>
+    <div class="sw"><i style="background:var(--fo-warn)"></i><span>warn</span></div>
+    <div class="sw"><i style="background:var(--fo-crit)"></i><span>crit</span></div>
+    <div class="sw"><i style="background:var(--fo-info)"></i><span>info</span></div>
+    <div class="sw"><i style="background:var(--fo-surface-2)"></i><span>surface-2</span></div>
+  </div>
+  <div class="row">
+    <span class="fo-pill fo-pill--ok">On track</span><span class="fo-pill fo-pill--warn">Warning</span><span class="fo-pill fo-pill--crit">Critical</span><span class="fo-pill fo-pill--info">Info</span>
+    <button class="fo-btn">Secondary</button><button class="fo-btn fo-btn--primary">Primary</button>
+  </div>
+  <ul class="list">
+    <li>Text colour pairs chosen for WCAG AA contrast in light and dark themes</li>
+    <li>Visible focus ring on every control; motion turned off for users who ask for reduced motion</li>
+    <li>Tabular numerals wherever figures line up in columns</li>
+  </ul>
+</section>
+
+<section aria-labelledby="next">
+  <h2 class="fo-h2" id="next">What I would test next</h2>
+  <div class="after">
+    <ul class="list">
+      <li>Ride-alongs with drivers to measure glance time on the nudge and adjust type size and wording</li>
+      <li>A week of dispatch shadowing to tune the queue order, for example whether repeat idling should outrank a single overheat</li>
+      <li>Whether "I'm waiting to load" reduces radio calls about idling, compared with a week without it</li>
+    </ul>
+  </div>
+</section>
+
+<footer>
+  <span>Fleury-Bryan Havyarimana · Canada · <a href="https://fleurybryanhavyarimana0-x.github.io">Portfolio</a> · <a href="https://github.com/fleurybryanhavyarimana0-X">GitHub</a></span>
+  <span>Portfolio project designed and built in 2026. Asset names, people and locations are demo data.</span>
+</footer>
+</div>
+</body>
+</html>

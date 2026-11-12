@@ -1,0 +1,66 @@
+/* FieldOps design tokens
+   One source of truth for both surfaces: the dispatcher web dashboard and the in-cab driver app.
+   Status colours are semantic and never reused as decoration. Every pair below meets WCAG AA (4.5:1) for text. */
+@import url("https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,400..800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap");
+
+:root {
+  /* Neutrals lean slightly green-grey, like painted steel in a yard */
+  --fo-bg: #f2f4f1;
+  --fo-surface: #ffffff;
+  --fo-surface-2: #e8ece7;
+  --fo-ink: #151b18;
+  --fo-ink-2: #4d5852;
+  --fo-line: #cfd6cf;
+
+  /* Brand + interaction */
+  --fo-accent: #b85c00;      /* safety orange, darkened for AA on white */
+  --fo-accent-ink: #ffffff;
+  --fo-focus: #1f6feb;
+
+  /* Semantic status */
+  --fo-ok: #1d7a46;
+  --fo-ok-bg: #e3f3e9;
+  --fo-warn: #8a5a00;
+  --fo-warn-bg: #fdf0d5;
+  --fo-crit: #b3261e;
+  --fo-crit-bg: #fbe4e2;
+  --fo-info: #23597a;
+  --fo-info-bg: #e2eef6;
+
+  /* Type */
+  --fo-display: "Archivo", system-ui, sans-serif;
+  --fo-text: "Inter", system-ui, sans-serif;
+  --fo-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --fo-size-xs: 12px;
+  --fo-size-sm: 14px;
+  --fo-size-md: 16px;
+  --fo-size-lg: 20px;
+  --fo-size-xl: 28px;
+  --fo-size-xxl: 40px;
+
+  /* Space (4px grid) and shape */
+  --fo-1: 4px; --fo-2: 8px; --fo-3: 12px; --fo-4: 16px; --fo-5: 24px; --fo-6: 32px; --fo-7: 48px;
+  --fo-radius: 6px;
+  --fo-radius-lg: 12px;
+
+  /* Touch: in-cab targets are larger than desk targets (gloves, vibration) */
+  --fo-target-desk: 36px;
+  --fo-target-cab: 56px;
+
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --fo-bg: #101412; --fo-surface: #181e1b; --fo-surface-2: #212925; --fo-ink: #e8ece8; --fo-ink-2: #a3aea7; --fo-line: #2e3833;
+    --fo-accent: #f08a2c; --fo-accent-ink: #1a0d00; --fo-focus: #6ea8ff;
+    --fo-ok: #5fd08f; --fo-ok-bg: #12301f; --fo-warn: #f2c25c; --fo-warn-bg: #33270b; --fo-crit: #ff8a80; --fo-crit-bg: #3a1513; --fo-info: #8cc4e6; --fo-info-bg: #13283a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --fo-bg: #101412; --fo-surface: #181e1b; --fo-surface-2: #212925; --fo-ink: #e8ece8; --fo-ink-2: #a3aea7; --fo-line: #2e3833;
+  --fo-accent: #f08a2c; --fo-accent-ink: #1a0d00; --fo-focus: #6ea8ff;
+  --fo-ok: #5fd08f; --fo-ok-bg: #12301f; --fo-warn: #f2c25c; --fo-warn-bg: #33270b; --fo-crit: #ff8a80; --fo-crit-bg: #3a1513; --fo-info: #8cc4e6; --fo-info-bg: #13283a;
+  color-scheme: dark;
+}

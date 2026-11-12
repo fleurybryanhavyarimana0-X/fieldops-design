@@ -1,0 +1,55 @@
+/* FieldOps components. Built only from tokens.css. */
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--fo-bg); color: var(--fo-ink); font: 400 var(--fo-size-md)/1.5 var(--fo-text); }
+a { color: var(--fo-info); }
+:focus-visible { outline: 3px solid var(--fo-focus); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+.fo-h1 { font: 800 var(--fo-size-xxl)/1.05 var(--fo-display); font-stretch: 110%; margin: 0; text-wrap: balance; }
+.fo-h2 { font: 750 var(--fo-size-xl)/1.15 var(--fo-display); margin: 0; text-wrap: balance; }
+.fo-h3 { font: 700 var(--fo-size-lg)/1.2 var(--fo-display); margin: 0; }
+.fo-label { font: 600 var(--fo-size-xs)/1.2 var(--fo-text); letter-spacing: .08em; text-transform: uppercase; color: var(--fo-ink-2); }
+.fo-mono { font-family: var(--fo-mono); font-variant-numeric: tabular-nums; }
+
+/* Button */
+.fo-btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--fo-2); min-height: var(--fo-target-desk); padding: 0 var(--fo-4);
+  border: 1px solid var(--fo-line); border-radius: var(--fo-radius); background: var(--fo-surface); color: var(--fo-ink); font: 600 var(--fo-size-sm) var(--fo-text); cursor: pointer; }
+.fo-btn:hover { border-color: var(--fo-ink-2); }
+.fo-btn--primary { background: var(--fo-accent); border-color: var(--fo-accent); color: var(--fo-accent-ink); }
+.fo-btn--cab { min-height: var(--fo-target-cab); font-size: var(--fo-size-lg); border-radius: var(--fo-radius-lg); width: 100%; }
+
+/* Status pill: shape + text + colour, never colour alone */
+.fo-pill { display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px; border-radius: 999px; font: 600 var(--fo-size-xs)/1.6 var(--fo-text); white-space: nowrap; }
+.fo-pill::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.fo-pill--ok { background: var(--fo-ok-bg); color: var(--fo-ok); }
+.fo-pill--warn { background: var(--fo-warn-bg); color: var(--fo-warn); }
+.fo-pill--warn::before { border-radius: 1px; transform: rotate(45deg); }
+.fo-pill--crit { background: var(--fo-crit-bg); color: var(--fo-crit); }
+.fo-pill--crit::before { border-radius: 0; width: 0; height: 0; background: none; border-left: 5px solid transparent; border-right: 5px solid transparent; border-bottom: 9px solid currentColor; }
+.fo-pill--info { background: var(--fo-info-bg); color: var(--fo-info); }
+
+/* Card */
+.fo-card { background: var(--fo-surface); border: 1px solid var(--fo-line); border-radius: var(--fo-radius-lg); padding: var(--fo-4); min-width: 0; }
+
+/* Alert row: severity stripe + who + what + when + one action */
+.fo-alert { display: grid; grid-template-columns: 4px 1fr auto; gap: var(--fo-3); align-items: center; padding: var(--fo-3) var(--fo-4) var(--fo-3) 0;
+  border-bottom: 1px solid var(--fo-line); }
+.fo-alert__stripe { align-self: stretch; border-radius: 0 3px 3px 0; }
+.fo-alert--crit .fo-alert__stripe { background: var(--fo-crit); }
+.fo-alert--warn .fo-alert__stripe { background: var(--fo-warn); }
+.fo-alert--info .fo-alert__stripe { background: var(--fo-info); }
+.fo-alert__title { font-weight: 600; }
+.fo-alert__meta { font-size: var(--fo-size-sm); color: var(--fo-ink-2); }
+
+/* Metric */
+.fo-metric { display: grid; gap: 2px; }
+.fo-metric__value { font: 700 var(--fo-size-xl)/1 var(--fo-display); font-variant-numeric: tabular-nums; }
+.fo-metric__unit { font-size: var(--fo-size-sm); color: var(--fo-ink-2); margin-left: 4px; font-family: var(--fo-text); font-weight: 500; }
+
+/* Table */
+.fo-table-wrap { overflow-x: auto; }
+.fo-table { width: 100%; border-collapse: collapse; font-size: var(--fo-size-sm); }
+.fo-table th { text-align: left; font: 600 var(--fo-size-xs) var(--fo-text); letter-spacing: .06em; text-transform: uppercase; color: var(--fo-ink-2); padding: var(--fo-2) var(--fo-3); border-bottom: 1px solid var(--fo-line); }
+.fo-table td { padding: var(--fo-3); border-bottom: 1px solid var(--fo-line); white-space: nowrap; }
+.fo-table td.num, .fo-table th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.fo-table tr[aria-selected="true"] td { background: var(--fo-surface-2); }

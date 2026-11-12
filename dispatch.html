@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FieldOps · Dispatch board</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="components.css">
+<style>
+  .shell { display: grid; grid-template-rows: auto 1fr; min-height: 100vh; }
+  .top { display: flex; flex-wrap: wrap; gap: var(--fo-3); align-items: center; justify-content: space-between; padding: var(--fo-3) max(16px, 2vw); background: var(--fo-surface); border-bottom: 1px solid var(--fo-line); }
+  .brand { font: 800 var(--fo-size-lg) var(--fo-display); font-stretch: 115%; }
+  .brand span { color: var(--fo-accent); }
+  .main { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: var(--fo-4); padding: var(--fo-4) max(16px, 2vw); align-items: start; }
+  .summary { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: var(--fo-3); }
+  .queue h2, .fleet h2 { margin-bottom: var(--fo-2); }
+  .queue-head { display: flex; justify-content: space-between; align-items: baseline; gap: var(--fo-2); }
+  .filters { display: flex; gap: var(--fo-2); flex-wrap: wrap; margin: var(--fo-2) 0 var(--fo-3); }
+  .filters button[aria-pressed="true"] { background: var(--fo-ink); color: var(--fo-surface); border-color: var(--fo-ink); }
+  .detail { margin-top: var(--fo-4); display: grid; gap: var(--fo-3); }
+  .detail dl { display: grid; grid-template-columns: auto 1fr; gap: 4px var(--fo-4); margin: 0; font-size: var(--fo-size-sm); }
+  .detail dt { color: var(--fo-ink-2); }
+  .detail dd { margin: 0; font-family: var(--fo-mono); }
+  .ack { color: var(--fo-ok); font-weight: 600; font-size: var(--fo-size-sm); }
+  .demo { font-size: var(--fo-size-xs); color: var(--fo-ink-2); }
+  @media (max-width: 900px) { .main { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="shell">
+  <header class="top">
+    <div class="brand">Field<span>Ops</span> · Dispatch</div>
+    <div class="fo-label">Main yard · Mon 2 Mar 2026 · shift A</div>
+    <span class="demo">Demo data</span>
+  </header>
+
+  <main class="main">
+    <section class="summary" aria-label="Shift summary">
+      <div class="fo-card fo-metric"><span class="fo-label">Assets on shift</span><span class="fo-metric__value" id="m-assets">–</span></div>
+      <div class="fo-card fo-metric"><span class="fo-label">Needs action</span><span class="fo-metric__value" id="m-open">–</span></div>
+      <div class="fo-card fo-metric"><span class="fo-label">Distance today</span><span class="fo-metric__value"><span id="m-km">–</span><span class="fo-metric__unit">km</span></span></div>
+      <div class="fo-card fo-metric"><span class="fo-label">Idle share</span><span class="fo-metric__value"><span id="m-idle">–</span><span class="fo-metric__unit">%</span></span></div>
+    </section>
+
+    <section class="queue fo-card" aria-labelledby="q-title">
+      <div class="queue-head"><h2 class="fo-h3" id="q-title">Action queue</h2><span class="fo-label" id="q-count"></span></div>
+      <div class="filters" role="group" aria-label="Filter by severity">
+        <button class="fo-btn" aria-pressed="true" data-f="all">All</button>
+        <button class="fo-btn" aria-pressed="false" data-f="crit">Critical</button>
+        <button class="fo-btn" aria-pressed="false" data-f="warn">Warning</button>
+      </div>
+      <div id="alerts" role="list"></div>
+    </section>
+
+    <section class="fleet fo-card" aria-labelledby="f-title">
+      <h2 class="fo-h3" id="f-title">Fleet</h2>
+      <div class="fo-table-wrap">
+        <table class="fo-table">
+          <thead><tr><th>Asset</th><th>Status</th><th class="num">km</th><th class="num">Idle min</th><th class="num">Max kph</th></tr></thead>
+          <tbody id="fleet"></tbody>
+        </table>
+      </div>
+      <div class="detail" id="detail" aria-live="polite"></div>
+    </section>
+  </main>
+</div>
+
+<script>
+// Assets and alerts follow the output format of fleet-telemetry-pipeline (two assets come straight from its sample run; the rest are demo rows).
+const assets = [
+  { id: "truck-101", type: "Haul truck", driver: "M. Tremblay", km: 24.5, engineMin: 58, idleMin: 0, maxKph: 118, status: "crit" },
+  { id: "loader-07", type: "Wheel loader", driver: "S. Nguyen", km: 17.3, engineMin: 58, idleMin: 18, maxKph: 64, status: "crit" },
+  { id: "truck-112", type: "Haul truck", driver: "A. Diallo", km: 31.2, engineMin: 62, idleMin: 4, maxKph: 88, status: "ok" },
+  { id: "van-03", type: "Service van", driver: "J. Roy", km: 12.8, engineMin: 41, idleMin: 12, maxKph: 72, status: "warn" },
+  { id: "loader-02", type: "Wheel loader", driver: "K. Osei", km: 9.6, engineMin: 55, idleMin: 6, maxKph: 38, status: "ok" }
+];
+const alerts = [
+  { id: 1, asset: "truck-101", sev: "crit", kind: "Speeding", detail: "118 kph in a 100 zone, Highway 20 ramp", at: "07:34" },
+  { id: 2, asset: "loader-07", sev: "crit", kind: "Engine overheating", detail: "Coolant 109 °C, above the 105 °C limit", at: "07:50" },
+  { id: 3, asset: "loader-07", sev: "warn", kind: "Idling", detail: "Engine on, not moving for 10 min at stockpile B", at: "07:20" },
+  { id: 4, asset: "van-03", sev: "warn", kind: "Idling", detail: "Engine on, not moving for 12 min at gate 2", at: "07:41" }
+];
+const label = { crit: "Critical", warn: "Warning", ok: "On track", info: "Info" };
+let filter = "all", selected = "truck-101";
+const acked = new Set();
+
+function renderSummary() {
+  const open = alerts.filter(a => !acked.has(a.id)).length;
+  const km = assets.reduce((s, a) => s + a.km, 0);
+  const idle = assets.reduce((s, a) => s + a.idleMin, 0) / assets.reduce((s, a) => s + a.engineMin, 0);
+  document.getElementById("m-assets").textContent = assets.length;
+  document.getElementById("m-open").textContent = open;
+  document.getElementById("m-km").textContent = km.toFixed(1);
+  document.getElementById("m-idle").textContent = Math.round(idle * 100);
+}
+
+function renderAlerts() {
+  const list = document.getElementById("alerts");
+  const rows = alerts.filter(a => filter === "all" || a.sev === filter)
+    .sort((a, b) => (a.sev === b.sev ? b.at.localeCompare(a.at) : a.sev === "crit" ? -1 : 1));
+  document.getElementById("q-count").textContent = `${rows.filter(a => !acked.has(a.id)).length} open`;
+  list.innerHTML = "";
+  for (const a of rows) {
+    const done = acked.has(a.id);
+    const row = document.createElement("div");
+    row.className = `fo-alert fo-alert--${a.sev}`;
+    row.setAttribute("role", "listitem");
+    row.innerHTML = `<span class="fo-alert__stripe" aria-hidden="true"></span>
+      <div><div class="fo-alert__title">${a.kind} · <button class="fo-btn" style="min-height:0;padding:0 6px;border:0;background:none;color:var(--fo-info);text-decoration:underline" data-asset="${a.asset}">${a.asset}</button></div>
+      <div class="fo-alert__meta">${a.detail} · <span class="fo-mono">${a.at}</span></div></div>
+      ${done ? `<span class="ack">Acknowledged</span>` : `<button class="fo-btn" data-ack="${a.id}">Acknowledge</button>`}`;
+    list.appendChild(row);
+  }
+}
+
+function renderFleet() {
+  const body = document.getElementById("fleet");
+  body.innerHTML = assets.map(a => `<tr aria-selected="${a.id === selected}" tabindex="0" data-asset="${a.id}">
+    <td class="fo-mono">${a.id}</td><td><span class="fo-pill fo-pill--${a.status}">${label[a.status]}</span></td>
+    <td class="num">${a.km.toFixed(1)}</td><td class="num">${a.idleMin}</td><td class="num">${a.maxKph}</td></tr>`).join("");
+  const a = assets.find(x => x.id === selected);
+  const open = alerts.filter(x => x.asset === a.id && !acked.has(x.id));
+  document.getElementById("detail").innerHTML = `<h3 class="fo-h3">${a.id} · ${a.type}</h3>
+    <dl><dt>Driver</dt><dd>${a.driver}</dd><dt>Engine time</dt><dd>${a.engineMin} min</dd><dt>Idle time</dt><dd>${a.idleMin} min</dd><dt>Open alerts</dt><dd>${open.length ? open.map(x => x.kind).join(", ") : "None"}</dd></dl>`;
+}
+
+function render() { renderSummary(); renderAlerts(); renderFleet(); }
+
+document.addEventListener("click", e => {
+  const ack = e.target.closest("[data-ack]");
+  if (ack) { acked.add(Number(ack.dataset.ack)); render(); return; }
+  const f = e.target.closest("[data-f]");
+  if (f) { filter = f.dataset.f; document.querySelectorAll("[data-f]").forEach(b => b.setAttribute("aria-pressed", b === f)); renderAlerts(); return; }
+  const as = e.target.closest("[data-asset]");
+  if (as) { selected = as.dataset.asset; renderFleet(); }
+});
+document.addEventListener("keydown", e => {
+  const row = e.target.closest("tr[data-asset]");
+  if (row && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); selected = row.dataset.asset; renderFleet(); }
+});
+render();
+</script>
+</body>
+</html>
